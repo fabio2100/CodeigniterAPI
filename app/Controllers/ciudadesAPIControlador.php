@@ -3,7 +3,7 @@ namespace App\Controllers;
 use CodeIgniter\RESTful\ResourceController;
 use CodeIgniter\API\ResponseTrait;
 use App\Models\CiudadesModel;
-use \Config\Services as servicios;
+//use \Config\Services as servicios;
 
 
 
@@ -32,41 +32,53 @@ class CiudadesAPIControlador extends ResourceController{
     //create -> ejecuta post
     public function create(){
         $model = new CiudadesModel();
-        $validation = servicios::validation();
-        if($validation -> setRules([
-            'nombre'=>'required|min_length[3]|is_unique[ciudades.nombre]'
-        ])
-        ->withRequest($this -> request)
-        ->run()){
-            $data = [
-                "nombre" => $this -> request -> getVar('nombre'),
-                "pais" => $this -> request -> getVar('pais')
-            ];
-            
-            $model -> insert($data);
+        //$validation = servicios::validation();
+        //if($validation -> setRules([
+        //    'nombre'=>'required|min_length[3]|is_unique[ciudades.nombre]'
+        //])
+        //->withRequest($this -> request)
+        //->run()){
+        //    $data = [
+        //        "nombre" => $this -> request -> getVar('nombre'),
+        //        "pais" => $this -> request -> getVar('pais')
+        //    ];
+        //    
+        //    $model -> insert($data);
+        //    $response = [
+        //        'status' => 201,
+        //        'error' => null,
+        //        'messages'=>[
+        //            'success'=>'Ciudad creada correctamente'
+        //        ]
+        //    ];
+        //    return $this -> respondCreated($response);
+        //}else{
+        //    return "No se pudo validar.";
+        //};
+        $reglas = ['nombre'=>'required|min_length[3]|is_unique[ciudades.nombre]'];
+        if(!$this->validate($reglas)){
             $response = [
-                'status' => 201,
-                'error' => null,
-                'messages'=>[
-                    'success'=>'Ciudad creada correctamente'
-                ]
+				'status' => 500,
+				'error' => true,
+				'message' => $this->validator->getErrors(),
+				'data' => []
+			];
+            return $this->respondCreated($response);
+        }else{
+            $data['nombre'] = $this -> request -> getVar('nombre');
+            $data['pais'] = $this -> request -> getVar('pais');
+            if($data['pais']==''){
+                $data['pais']=NULL;
+            }
+            $model ->save($data);
+            $response = [
+                'status'=>200,
+                'error'=>false,
+                'message'=> "Ciudad creada correctamente",
+                'data'=>$data
             ];
             return $this -> respondCreated($response);
-        }else{
-            return $this -> respondCreated(["mensaje"=>"no se pudo validar"]);
-        };
-        //$reglas = ['nombre'=>'required|min_length[3]is_unique[ciudades.nombre]'];
-        //if(!$this->validate($reglas)){
-        //    $response = [
-		//		'status' => 500,
-		//		'error' => true,
-		//		'message' => $this->validator->getErrors(),
-		//		'data' => []
-		//	];
-        //    return $this->respondCreated($response);
-        //}else{
-        //    return "paso las verificaciones";
-        //}
+        }
     }
     
 
