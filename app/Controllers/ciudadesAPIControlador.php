@@ -24,61 +24,31 @@ class CiudadesAPIControlador extends ResourceController{
         $data = $model -> where('id',$id)->first();
         if($data){
             return $this -> respond($data);
-        }else{
-            return $this-> failNotFound('No encontrado');
         }
+        return $this-> failNotFound('No hay ciudad asiganada con ese id');
+        
     }
 
     //create -> ejecuta post
     public function create(){
-        $model = new CiudadesModel();
-        //$validation = servicios::validation();
-        //if($validation -> setRules([
-        //    'nombre'=>'required|min_length[3]|is_unique[ciudades.nombre]'
-        //])
-        //->withRequest($this -> request)
-        //->run()){
-        //    $data = [
-        //        "nombre" => $this -> request -> getVar('nombre'),
-        //        "pais" => $this -> request -> getVar('pais')
-        //    ];
-        //    
-        //    $model -> insert($data);
-        //    $response = [
-        //        'status' => 201,
-        //        'error' => null,
-        //        'messages'=>[
-        //            'success'=>'Ciudad creada correctamente'
-        //        ]
-        //    ];
-        //    return $this -> respondCreated($response);
-        //}else{
-        //    return "No se pudo validar.";
-        //};
-        $reglas = ['nombre'=>'required|min_length[3]|is_unique[ciudades.nombre]'];
-        if(!$this->validate($reglas)){
-            $response = [
-				'status' => 500,
-				'error' => true,
-				'message' => $this->validator->getErrors(),
-				'data' => []
-			];
-            return $this->respondCreated($response);
-        }else{
-            $data['nombre'] = $this -> request -> getVar('nombre');
-            $data['pais'] = $this -> request -> getVar('pais');
-            if($data['pais']==''){
-                $data['pais']=NULL;
-            }
-            $model ->save($data);
-            $response = [
-                'status'=>200,
-                'error'=>false,
-                'message'=> "Ciudad creada correctamente",
-                'data'=>$data
-            ];
-            return $this -> respondCreated($response);
-        }
+      $model = new CiudadesModel();
+      $reglas = ['nombre'=>'required|min_length[3]|is_unique[ciudades.nombre]'];
+      if(!$this->validate($reglas)){
+          return $this->failValidationError(implode($this->validator->getErrors()));
+      }
+      $data['nombre'] = $this -> request -> getVar('nombre');
+      $data['pais'] = $this -> request -> getVar('pais');
+      if($data['pais']==''){
+          $data['pais']=NULL;
+      }
+      $model ->save($data);
+      $response = [
+          'status'=>201,
+          'error'=>false,
+          'message'=> "Ciudad creada correctamente",
+          'data'=>$data
+      ];
+      return $this -> respondCreated($response); 
     }
     
 
@@ -86,11 +56,15 @@ class CiudadesAPIControlador extends ResourceController{
     //put update
     public function update($id=null){
         $model = new CiudadesModel();
+        $reglas = ['nombre'=>'required|min_length[3]|is_unique[ciudades.nombre]'];
+        if(!$this -> validate($reglas)){
+          return $this -> failValidationError(implode($this -> validator -> getErrors()));
+        }
         $data = [
             'nombre' => $this -> request -> getVar('nombre'),
             'pais' => $this -> request -> getVar('pais')
         ];
-        $model -> update($id,$data);
+        $res = $model -> update($id,$data);
         $response = [
             "status" => 200,
             "error" => null,
@@ -98,7 +72,7 @@ class CiudadesAPIControlador extends ResourceController{
                 'success'=>"Ciudad actualizada correctamente"
             ]
         ];
-        return $this -> respond($response);
+        return $this -> respond($res);
     }
 
     //delete 
@@ -113,7 +87,7 @@ class CiudadesAPIControlador extends ResourceController{
                     'Sucess' => "Eliminada correctamente"
                 ]
             ];
-            return $this -> respond($response);
+            return $this -> respondDeleted($response);
         } catch (Exception $e) {
             return $e -> getMessage();
         }
@@ -127,7 +101,24 @@ class CiudadesAPIControlador extends ResourceController{
         $data['ciudadesEliminadas']=$model -> onlyDeleted()->findAll();
         return $this -> respond($data);
     }
+
+
+    public function pasaAMayus(){
+      $model = new CiudadesModel();
+      try {
+        $data = $model -> findAll();
+        foreach ($data as $ciudad) {
+          $dataCity = $model -> where('id',$ciudad['id'])->first();
+          $dataCity['nombre'] = strtoupper($dataCity['nombre']);
+          $dataCity['pais'] = strtoupper($dataCity['pais']);
+          $model -> update($ciudad['id'],$dataCity);
+        }
+        echo "paso el try";
+      } catch (Exception $e) {
+        echo $e->getLine() .'  '.$e->getMessage();
+      }
+    }
 }
 
 
-?>
+?>  

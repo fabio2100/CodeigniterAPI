@@ -8,6 +8,7 @@ class CiudadesModel extends Model{
 	protected $allowedFields = ['nombre','pais'];
 
 	protected $useSoftDeletes = true;
+	protected $useTimestamps = true;
 
 	public function getCiudades($id=null){
 		if(is_null($id)){
