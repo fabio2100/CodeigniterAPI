@@ -32,12 +32,12 @@ class CiudadesAPIControlador extends ResourceController{
     //create -> ejecuta post
     public function create(){
       $model = new CiudadesModel();
+      $data['nombre'] = strtoupper($this -> request -> getVar('nombre'));
+      $data['pais'] = strtoupper($this -> request -> getVar('pais'));
       $reglas = ['nombre'=>'required|min_length[3]|is_unique[ciudades.nombre]'];
       if(!$this->validate($reglas)){
           return $this->failValidationError(implode($this->validator->getErrors()));
       }
-      $data['nombre'] = $this -> request -> getVar('nombre');
-      $data['pais'] = $this -> request -> getVar('pais');
       if($data['pais']==''){
           $data['pais']=NULL;
       }
@@ -61,10 +61,10 @@ class CiudadesAPIControlador extends ResourceController{
           return $this -> failValidationError(implode($this -> validator -> getErrors()));
         }
         $data = [
-            'nombre' => $this -> request -> getVar('nombre'),
-            'pais' => $this -> request -> getVar('pais')
+            'nombre' => strtoupper($this -> request -> getVar('nombre')),
+            'pais' => strtoupper($this -> request -> getVar('pais'))
         ];
-        $res = $model -> update($id,$data);
+        $model -> update($id,$data);
         $response = [
             "status" => 200,
             "error" => null,
@@ -72,7 +72,7 @@ class CiudadesAPIControlador extends ResourceController{
                 'success'=>"Ciudad actualizada correctamente"
             ]
         ];
-        return $this -> respond($res);
+        return $this -> respond($response);
     }
 
     //delete 
@@ -103,21 +103,6 @@ class CiudadesAPIControlador extends ResourceController{
     }
 
 
-    public function pasaAMayus(){
-      $model = new CiudadesModel();
-      try {
-        $data = $model -> findAll();
-        foreach ($data as $ciudad) {
-          $dataCity = $model -> where('id',$ciudad['id'])->first();
-          $dataCity['nombre'] = strtoupper($dataCity['nombre']);
-          $dataCity['pais'] = strtoupper($dataCity['pais']);
-          $model -> update($ciudad['id'],$dataCity);
-        }
-        echo "paso el try";
-      } catch (Exception $e) {
-        echo $e->getLine() .'  '.$e->getMessage();
-      }
-    }
 }
 
 
