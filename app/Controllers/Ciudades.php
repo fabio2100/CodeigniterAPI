@@ -2,7 +2,7 @@
 namespace App\Controllers;
 use CodeIgniter\Controller;
 use App\models\CiudadesModel;
-
+//comentario
 class Ciudades extends Controller{
 	public function index(){
 		$ciudades = new CiudadesModel();
